@@ -15,6 +15,7 @@ var (
 	procCoInitializeEx, _          = modole32.FindProc("CoInitializeEx")
 	procCoUninitialize, _          = modole32.FindProc("CoUninitialize")
 	procCoCreateInstance, _        = modole32.FindProc("CoCreateInstance")
+	procCoCreateInstanceEx, _      = modole32.FindProc("CoCreateInstanceEx")
 	procCoTaskMemFree, _           = modole32.FindProc("CoTaskMemFree")
 	procCLSIDFromProgID, _         = modole32.FindProc("CLSIDFromProgID")
 	procCLSIDFromString, _         = modole32.FindProc("CLSIDFromString")
@@ -37,6 +38,14 @@ var (
 	procGetMessageW, _      = moduser32.FindProc("GetMessageW")
 	procDispatchMessageW, _ = moduser32.FindProc("DispatchMessageW")
 )
+
+// TODO: where should this go?
+// MULTI_QI type
+type MULTI_QI struct {
+	pIID *GUID
+	pItf *IUnknown
+	hr   int32
+}
 
 // coInitialize initializes COM library on current thread.
 //
@@ -192,6 +201,38 @@ func CreateInstance(clsid *GUID, iid *GUID) (unk *IUnknown, err error) {
 		err = NewError(hr)
 	}
 	return
+}
+
+// CreateInstanceEx of single uninitialized object on server with GUID.
+func CreateInstanceEx(clsid *GUID, iid *GUID, server string) (unk *IUnknown, err error) {
+	if iid == nil {
+		iid = IID_IUnknown
+	}
+	// TODO: example uses CLSCTX_LOCAL_SERVER | CLSCTX_REMOTE_SERVER whereas CLSCTX_SERVER also includes CLSCTX_INPROC_SERVER
+	// TODO: set pServerInfo based on server
+	var hr0 int32
+	var cnt uint32 = 1
+	res := MULTI_QI{
+		iid,
+		unk,
+		hr0,
+	}
+	hr, _, _ := procCoCreateInstanceEx.Call(
+		uintptr(unsafe.Pointer(clsid)), // REFCLSID rclsid
+		0,                             // IUnknown *punkOuter
+		CLSCTX_SERVER,                 // DWORD dwClsCtx
+		0,                             // COSERVERINFO *pServerInfo
+		uintptr(cnt),                  // DWORD dwCount
+		uintptr(unsafe.Pointer(&res)), // MULTI_Q *pResults
+	)
+
+	if hr != 0 {
+		err = NewError(hr)
+	}
+	if hr0 != 0 {
+		err = NewError(uintptr(unsafe.Pointer(&hr0)))
+	}
+	return res.pItf, nil
 }
 
 // GetActiveObject retrieves pointer to active object.

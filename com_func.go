@@ -96,6 +96,11 @@ func CreateInstance(clsid *GUID, iid *GUID) (*IUnknown, error) {
 	return nil, NewError(E_NOTIMPL)
 }
 
+// CreateInstanceEx of single uninitialized object on server with GUID.
+func CreateInstanceEx(clsid *GUID, iid *GUID, server string) (*IUnknown, error) {
+	return nil, NewError(E_NOTIMPL)
+}
+
 // GetActiveObject retrieves pointer to active object.
 func GetActiveObject(clsid *GUID, iid *GUID) (*IUnknown, error) {
 	return nil, NewError(E_NOTIMPL)

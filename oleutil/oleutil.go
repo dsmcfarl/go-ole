@@ -26,6 +26,27 @@ func CreateObject(programID string) (unknown *ole.IUnknown, err error) {
 	return
 }
 
+// CreateObjectEx creates object on remote server from programID based on
+// interface type.
+//
+// Only supports IUnknown.
+//
+// Program ID can be either program ID or application string.
+func CreateObjectEx(programID, server string) (unknown *ole.IUnknown, err error) {
+	// TODO: cannot use this to lookup b/c local host may not have pvxcom.exe installed
+	classID, err := ole.ClassIDFrom(programID)
+	if err != nil {
+		return
+	}
+
+	unknown, err = ole.CreateInstanceEx(classID, ole.IID_IUnknown, server)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 // GetActiveObject retrieves active object for program ID and interface ID based
 // on interface type.
 //
