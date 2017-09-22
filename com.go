@@ -47,6 +47,13 @@ type MULTI_QI struct {
 	hr   int32
 }
 
+type COSERVERINFO struct {
+	dwReserved1 int32   // DWORD
+	pwszName    uintptr // LPWSTR
+	pAuthInfo   uintptr // *COAUTHINFO
+	dwReserved2 int32   // DWORD
+}
+
 // coInitialize initializes COM library on current thread.
 //
 // MSDN documentation suggests that this function should not be called. Call
@@ -208,8 +215,6 @@ func CreateInstanceEx(clsid *GUID, iid *GUID, server string) (unk *IUnknown, err
 	if iid == nil {
 		iid = IID_IUnknown
 	}
-	// TODO: example uses CLSCTX_LOCAL_SERVER | CLSCTX_REMOTE_SERVER whereas CLSCTX_SERVER also includes CLSCTX_INPROC_SERVER
-	// TODO: set pServerInfo based on server
 	var hr0 int32
 	var cnt uint32 = 1
 	res := MULTI_QI{
@@ -217,11 +222,24 @@ func CreateInstanceEx(clsid *GUID, iid *GUID, server string) (unk *IUnknown, err
 		unk,
 		hr0,
 	}
+	var pServerInfo uintptr
+
+	if server != "" {
+		pwszName := uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(server)))
+		serverInfo := COSERVERINFO{
+			0,
+			pwszName,
+			0,
+			0,
+		}
+		pServerInfo = uintptr(unsafe.Pointer(&serverInfo))
+	}
+
 	hr, _, _ := procCoCreateInstanceEx.Call(
 		uintptr(unsafe.Pointer(clsid)), // REFCLSID rclsid
 		0,                             // IUnknown *punkOuter
 		CLSCTX_SERVER,                 // DWORD dwClsCtx
-		0,                             // COSERVERINFO *pServerInfo
+		pServerInfo,                   // COSERVERINFO *pServerInfo
 		uintptr(cnt),                  // DWORD dwCount
 		uintptr(unsafe.Pointer(&res)), // MULTI_Q *pResults
 	)

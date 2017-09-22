@@ -1,6 +1,8 @@
 package oleutil
 
-import ole "github.com/dsmcfarl/go-ole"
+import (
+	ole "github.com/dsmcfarl/go-ole"
+)
 
 // ClassIDFrom retrieves class ID whether given is program ID or application string.
 func ClassIDFrom(programID string) (classID *ole.GUID, err error) {
@@ -26,20 +28,14 @@ func CreateObject(programID string) (unknown *ole.IUnknown, err error) {
 	return
 }
 
-// CreateObjectEx creates object on remote server from programID based on
+// CreateObjectEx creates object on remote server from class id based on
 // interface type.
 //
 // Only supports IUnknown.
 //
-// Program ID can be either program ID or application string.
-func CreateObjectEx(programID, server string) (unknown *ole.IUnknown, err error) {
-	// TODO: cannot use this to lookup b/c local host may not have pvxcom.exe installed
-	classID, err := ole.ClassIDFrom(programID)
-	if err != nil {
-		return
-	}
-
-	unknown, err = ole.CreateInstanceEx(classID, ole.IID_IUnknown, server)
+// clsIdStr must be the class id (not the application Id)
+func CreateObjectEx(clsId *ole.GUID, server string) (unknown *ole.IUnknown, err error) {
+	unknown, err = ole.CreateInstanceEx(clsId, ole.IID_IUnknown, server)
 	if err != nil {
 		return
 	}
