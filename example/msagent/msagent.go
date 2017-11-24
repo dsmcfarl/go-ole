@@ -5,8 +5,8 @@ package main
 import (
 	"time"
 
-	ole "github.com/go-ole/go-ole"
-	"github.com/go-ole/go-ole/oleutil"
+	ole "github.com/dsmcfarl/go-ole"
+	"github.com/dsmcfarl/go-ole/oleutil"
 )
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 	oleutil.CallMethod(characters, "Load", "Merlin", "c:\\windows\\msagent\\chars\\Merlin.acs")
 	character := oleutil.MustCallMethod(characters, "Character", "Merlin").ToIDispatch()
 	oleutil.CallMethod(character, "Show")
-	oleutil.CallMethod(character, "Speak", "こんにちわ世界")
+	oleutil.CallMethod(character, "Speak", "ããã«ã¡ãä¸ç")
 
 	time.Sleep(4000000000)
 }
