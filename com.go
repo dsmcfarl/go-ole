@@ -237,11 +237,11 @@ func CreateInstanceEx(clsid *GUID, iid *GUID, server string) (unk *IUnknown, err
 
 	hr, _, _ := procCoCreateInstanceEx.Call(
 		uintptr(unsafe.Pointer(clsid)), // REFCLSID rclsid
-		0,                             // IUnknown *punkOuter
-		CLSCTX_SERVER,                 // DWORD dwClsCtx
-		pServerInfo,                   // COSERVERINFO *pServerInfo
-		uintptr(cnt),                  // DWORD dwCount
-		uintptr(unsafe.Pointer(&res)), // MULTI_Q *pResults
+		0,                              // IUnknown *punkOuter
+		CLSCTX_SERVER,                  // DWORD dwClsCtx
+		pServerInfo,                    // COSERVERINFO *pServerInfo
+		uintptr(cnt),                   // DWORD dwCount
+		uintptr(unsafe.Pointer(&res)),  // MULTI_Q *pResults
 	)
 
 	if hr != 0 {
@@ -250,7 +250,7 @@ func CreateInstanceEx(clsid *GUID, iid *GUID, server string) (unk *IUnknown, err
 	if hr0 != 0 {
 		err = NewError(uintptr(unsafe.Pointer(&hr0)))
 	}
-	return res.pItf, nil
+	return res.pItf, err
 }
 
 // GetActiveObject retrieves pointer to active object.
